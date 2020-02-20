@@ -48,7 +48,7 @@ module "vpc_adds-servers" {
 
 #########Security group module
 module "adds-sg" {
-  source  = "github.com/fopingn/terraform-aws-sg-basic.git"
+  source = "github.com/fopingn/terraform-aws-sg-basic.git"
 
   name = "adds_sg"
 
@@ -145,7 +145,7 @@ module "adds-servers" {
   # Only showing user data and provisioners
   user_data = data.template_file.user_data.rendered
 
-/*  # Provisioners that use WinRM
+  /*  # Provisioners that use WinRM
   provisioner "file" {
     source      = "files/config.ps1"
     destination = "C:/config.ps1"
@@ -179,16 +179,16 @@ module "adds-servers" {
     }
   }
 */
-####################################Testing code from some blog
-# Generate a password for our WinRM connection
-/*resource "random_string" "winrm_password" {
+  ####################################Testing code from some blog
+  # Generate a password for our WinRM connection
+  /*resource "random_string" "winrm_password" {
   length = 16
   special = false
 }*/
 
 
 
-/*resource "aws_security_group" "adds_sg" {
+  /*resource "aws_security_group" "adds_sg" {
   name        = "adds_host"
   description = "Allow SSH & WINRM to adds hosts"
   vpc_id      = module.vpc_adds-servers.vpc_id
@@ -228,7 +228,14 @@ data "template_file" "user_data" {
   template = file("files/user_data.tpl")
 
   vars = {
-    password = var.winrm_password
+    password          = var.winrm_password
+    DomainName        = var.DomainName
+    ForestMode        = var.ForestMode
+    DomainMode        = var.DomainMode
+    DatabasePath      = var.DatabasePath
+    SYSVOLPath        = var.SYSVOLPath
+    LogPath           = var.LogPath
+    ADRestorePassword = var.ADRestorePassword
   }
 }
 
