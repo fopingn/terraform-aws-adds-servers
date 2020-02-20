@@ -1,17 +1,19 @@
 <powershell>
 #Create variables for ADDS installation
+$DatabasePath = "${DatabasePath}"
 $DomainName = "${DomainName}"
-$NetBIOSName = $DomainName.Split(".") | Select -First 1
-$ForestMode = "{ForestMode}"
-$DomainMode = "{DomainMode}"
-$DatabasePath = "{DatabasePath}"
-$SYSVOLPath = "{SYSVOLPath}"
-$LogPath = "{LogPath}"
-$ADRestorePassword = "{ADRestorePassword}"
+$DomainNetbiosName = $DomainName.Split(".") | Select -First 1
+$ForestMode = "${ForestMode}"
+$DomainMode = "${DomainMode}"
+$DatabasePath = "${DatabasePath}"
+$SYSVOLPath = "${SYSVOLPath}"
+$LogPath = "${LogPath}"
+$SafeModeAdministratorPassword = ConvertTo-SecureString -String "P@ssw0rd" -AsPlainText -Force
+
 
 # Create a user account to interact with WinRM
 $Username = "terraform"
-$Password = "${password}"
+$Password = "${Password}"
 $group = "Administrators"
 
 # Creating new local user
@@ -36,19 +38,22 @@ New-NetFirewallRule -DisplayName "Windows Remote Management (HTTPS-In)" -Name "W
 # Installation of Active Directory Domain Services
 Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
 # Promoting Server to Domain Controller
-Import-Module ADDSDeployment
+
+Import-Module ADDSDeployment `
 Install-ADDSForest `
--CreateDnsDelegation:$false `
--DatabasePath "C:\Windows\NTDS" `
--DomainMode "Win2012R2" `
--DomainName "example.com" `
--DomainNetbiosName "EXAMPLE" `
--ForestMode "Win2012R2" `
+-confirm:$false `
+-CreateDnsDelegation:$true `
+-DatabasePath $DatabasePath `
+-DomainMode  $DomainMode `
+-DomainName $DomainMode `
+-DomainNetbiosName $DomainNetbiosName `
+-ForestMode $ForestMode `
 -InstallDns:$true `
--LogPath "C:\Windows\NTDS" `
--NoRebootOnCompletion:$false `
--SysvolPath "C:\Windows\SYSVOL"
--SafeModeAdministratorPassword $ADRestorePassword `
--Force:$true `
+-LogPath $LogPath `
+-SysvolPath $SysvolPath `
+-SkipAutoConfigureDns:$false `
+-SkipPreChecks:$false `
+-SafeModeAdministratorPassword $SafeModeAdministratorPassword `
+-Force:$true
 </powershell>
 <persist>true</persist>
