@@ -152,6 +152,7 @@ data "template_file" "user_data" {
     DatabasePath = var.DatabasePath
     SYSVOLPath   = var.SYSVOLPath
     LogPath      = var.LogPath
+    AdminSafeModePassword = var.AdminSafeModePassword
   }
 }
 

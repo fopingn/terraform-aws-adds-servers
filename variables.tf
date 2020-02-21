@@ -28,7 +28,7 @@ variable "cidr_blocks_egress" {
 
 ########Variables for user_data file
 variable "Password" {
-  type = string
+  type        = string
   description = "the default password for winrm connection"
   default     = ""
 }
@@ -83,12 +83,12 @@ variable "LogPath" {
   description = "Specifies the fully qualified, non-UNC path to a directory on a fixed disk of the local computer where the log file for this operation is written. "
   default     = ""
 }
-/*variable "SafeModeAdministratorPassword" {
+variable "AdminSafeModePassword" {
   type        = string
   description = "Supplies the password for the administrator account when the computer is started in Safe Mode or a variant of Safe Mode, such as Directory Services Restore Mode. "
   default     = ""
 }
-
+/*
 variable "SkipAutoConfigureDns" {
   type = bool
   description = "Indicates that the cmdlet skips automatic configuration of DNS client settings, forwarders, and root hints. "

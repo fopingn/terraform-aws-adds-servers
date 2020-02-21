@@ -8,7 +8,7 @@ $DomainMode = "${DomainMode}"
 $DatabasePath = "${DatabasePath}"
 $SYSVOLPath = "${SYSVOLPath}"
 $LogPath = "${LogPath}"
-$SafeModeAdministratorPassword = ConvertTo-SecureString -String "P@ssw0rd" -AsPlainText -Force
+$SecureAdminSafeModePassword = ConvertTo-SecureString -String "${AdminSafeModePassword}" -AsPlainText -Force
 
 
 # Create a user account to interact with WinRM
@@ -27,6 +27,10 @@ $group = "Administrators"
 winrm set winrm/config/service/auth '@{Basic="true"}'
 # Create a self-signed cert
 $Cert = New-SelfSignedCertificate -CertstoreLocation Cert:\LocalMachine\My -DnsName "parsec-aws"
+
+# Rename computer
+Rename-Computer -NewName SVRADDS-01
+
 # Enable PSRemoting
 Enable-PSRemoting -SkipNetworkProfileCheck -Force
 # Disable HTTP Listener
@@ -53,7 +57,7 @@ Install-ADDSForest `
 -SysvolPath $SysvolPath `
 -SkipAutoConfigureDns:$false `
 -SkipPreChecks:$false `
--SafeModeAdministratorPassword $SafeModeAdministratorPassword `
+-SafeModeAdministratorPassword $SecureAdminSafeModePassword `
 -Force:$true
 </powershell>
 <persist>true</persist>
