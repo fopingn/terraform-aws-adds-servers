@@ -9,11 +9,65 @@ variable "key_name" {
   default     = "name_key"
 }
 
-/*variable "instance_ips" {
-  description = "The private IPs to use for our instances"
-  default     = ["10.0.1.20", "10.0.1.21"]
+variable "private_ip" {
+  description = "The private IP to use for our instances"
+  type        = string
+  default     = ""
 }
-*/
+
+variable "tags" {
+  description = "tags for ec2 instances"
+  type        = map(string)
+  default     = {}
+}
+variable "vpc_tags" {
+  description = "Additional tags for the VPC"
+  type        = map(string)
+  default     = {}
+}
+
+variable "igw_tags" {
+  description = "Additional tags for the internet gateway"
+  type        = map(string)
+  default     = {}
+}
+
+variable "public_subnet_tags" {
+  description = "Additional tags for the public subnets"
+  type        = map(string)
+  default     = {}
+}
+
+variable "private_subnet_tags" {
+  description = "Additional tags for the private subnets"
+  type        = map(string)
+  default     = {}
+}
+
+variable "cidr" {
+  description = "The cidr  block "
+  type        = string
+  default     = ""
+}
+
+variable "public_subnets" {
+  description = "A list of public subnets inside the VPC"
+  type        = list(string)
+  default     = []
+}
+
+variable "private_subnets" {
+  description = "A list of private subnets inside the VPC"
+  type        = list(string)
+  default     = []
+}
+
+variable "azs" {
+  description = "A list of availability zones in the region"
+  type        = list(string)
+  default     = []
+}
+
 variable "cidr_blocks_ingress" {
   description = "list of cidr ingress block "
   type        = list
@@ -33,30 +87,24 @@ variable "Password" {
   default     = ""
 }
 
-/*variable "Confirm" {
-  type = bool
-  description = "Prompts you for confirmation before running the cmdlet"
-  default = ""
+variable "ServerName" {
+  type        = string
+  description = "the name of the server. Example SRV-ADDS01"
+  default     = ""
 }
-*/
+
+variable "TimeZoneID" {
+  type        = string
+  description = "the system time zone to a specified time zone."
+  default     = ""
+}
+
 variable "DomainName" {
   type        = string
   description = "Specifies the fully qualified domain name (FQDN) for the root domain in the forest. "
   default     = ""
 }
 
-/*variable "CreateDnsDelegation" {
-  type = bool
-  description = "Indicates that this cmdlet creates a DNS delegation that references the new DNS server that you install along with the domain controller."
-  default = ""
-}
-
-variable "InstallDns" {
-  type = bool
-  default = "Indicates that this cmdlet installs and configures the DNS Server service for the new forest"
-  default= false
-}
-*/
 variable "ForestMode" {
   type        = string
   description = "Specifies the forest functional level for the new forest. "
@@ -88,16 +136,3 @@ variable "AdminSafeModePassword" {
   description = "Supplies the password for the administrator account when the computer is started in Safe Mode or a variant of Safe Mode, such as Directory Services Restore Mode. "
   default     = ""
 }
-/*
-variable "SkipAutoConfigureDns" {
-  type = bool
-  description = "Indicates that the cmdlet skips automatic configuration of DNS client settings, forwarders, and root hints. "
-  default = ""
-}
-
-variable "SkipPreChecks" {
-  type = bool
-  description = "Indicates that the cmdlet performs only a base set of validations."
-  default = ""
-}
-*/

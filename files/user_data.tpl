@@ -1,4 +1,8 @@
 <powershell>
+###Variables for  server installation###
+$ServerName = "${ServerName}"
+$private_ip = "${private_ip}"
+$TimeZoneID = "${TimeZoneID}"
 #Create variables for ADDS installation
 $DatabasePath = "${DatabasePath}"
 $DomainName = "${DomainName}"
@@ -9,47 +13,27 @@ $DatabasePath = "${DatabasePath}"
 $SYSVOLPath = "${SYSVOLPath}"
 $LogPath = "${LogPath}"
 $SecureAdminSafeModePassword = ConvertTo-SecureString -String "${AdminSafeModePassword}" -AsPlainText -Force
+#$defaultgateway = Get-NetRoute -InterfaceIndex (Get-NetAdapter).ifIndex
 
-
-# Create a user account to interact with WinRM
-$Username = "terraform"
-$Password = "${Password}"
-$group = "Administrators"
-
-# Creating new local user
-& NET USER $Username $Password /add /y /expires:never
-# Adding local user to group
-& NET LOCALGROUP $group $Username /add
-# Ensuring password never expires
-& WMIC USERACCOUNT WHERE "Name='$Username'" SET PasswordExpires=FALSE
-
-# Enable WinRM Basic auth
-winrm set winrm/config/service/auth '@{Basic="true"}'
-# Create a self-signed cert
-$Cert = New-SelfSignedCertificate -CertstoreLocation Cert:\LocalMachine\My -DnsName "parsec-aws"
-
+###Prequisites fo Active Directory installation#####
 # Rename computer
-Rename-Computer -NewName SVRADDS-01
+Rename-Computer -NewName $ServerName
+#Set DNS address
+Set-DnsClientServerAddress -InterfaceIndex (Get-NetAdapter).ifIndex -ServerAddresses ($private_ip,"8.8.8.8")
+#Set time zone
+Set-TimeZone -Id $TimeZoneID
 
-# Enable PSRemoting
-Enable-PSRemoting -SkipNetworkProfileCheck -Force
-# Disable HTTP Listener
-Get-ChildItem WSMan:\Localhost\listener | Where -Property Keys -eq "Transport=HTTP" | Remove-Item -Recurse
-# Enable HTTPS listener with certificate
-New-Item -Path WSMan:\LocalHost\Listener -Transport HTTPS -Address * -CertificateThumbPrint $Cert.Thumbprint -Force
-# Open firewall for HTTPS WinRM traffic
-New-NetFirewallRule -DisplayName "Windows Remote Management (HTTPS-In)" -Name "Windows Remote Management (HTTPS-In)" -Profile Any -LocalPort 5986 -Protocol TCP
-# Installation of Active Directory Domain Services
+#### Installation of Active Directory Domain Services ###
 Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
-# Promoting Server to Domain Controller
 
-Import-Module ADDSDeployment `
+### Promoting Server to Domain Controller ###
+Import-Module ADDSDeployment
 Install-ADDSForest `
 -confirm:$false `
--CreateDnsDelegation:$true `
+-CreateDnsDelegation:$false `
 -DatabasePath $DatabasePath `
--DomainMode  $DomainMode `
--DomainName $DomainMode `
+-DomainMode $DomainMode `
+-DomainName $DomainName `
 -DomainNetbiosName $DomainNetbiosName `
 -ForestMode $ForestMode `
 -InstallDns:$true `
@@ -58,6 +42,27 @@ Install-ADDSForest `
 -SkipAutoConfigureDns:$false `
 -SkipPreChecks:$false `
 -SafeModeAdministratorPassword $SecureAdminSafeModePassword `
+-NoRebootOnCompletion:$false `
 -Force:$true
+
+### Installation of the DHCP services ###
+# Install role
+Install-WindowsFeature -Name 'DHCP' –IncludeManagementTools
+# Add DHCP Scope
+Add-DhcpServerV4Scope `
+ -Name "PresseDomainClient Scope" `
+ -StartRange 30.0.20.50 `
+ -EndRange 30.0.20.100 `
+ -SubnetMask 255.255.255.0
+# Add DNS Server, Router Gateway Options
+Set-DhcpServerV4OptionValue `
+ -DnsServer $private_ip `
+ -Router 30.0.20.1
+# Set Up Lease Duration
+Set-DhcpServerv4Scope `
+ -ScopeId $private_ip `
+ -LeaseDuration 1.00:00:00
+# Restart DHCP Service
+Restart-service dhcpserver
 </powershell>
 <persist>true</persist>
